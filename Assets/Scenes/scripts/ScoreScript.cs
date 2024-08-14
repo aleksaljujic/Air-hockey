@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ScoreScript : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class ScoreScript : MonoBehaviour
         Player2
     }
 
-    public Text P1ScoreText, P2ScoreText;
+    public TMP_Text P1ScoreText, P2ScoreText;
     public int p1score, p2score;
 
     public void IncrementScore(Score score)
