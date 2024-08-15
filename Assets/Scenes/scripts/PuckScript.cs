@@ -7,6 +7,7 @@ public class PuckScript : MonoBehaviour
     public ScoreScript scs;
     public static bool goal{ get; private set; }
     private Rigidbody2D rb;
+    public Transform Player1,Player2;
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +39,8 @@ public class PuckScript : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(1);
         goal = false;
-        rb.velocity = rb.position = new Vector2(0.6f, 0.6f);
+        rb.velocity = rb.position = new Vector2(0, 0);
+        Player1.position = new Vector2(-0.007f, -1f);
+        Player2.position = new Vector2(-0.007f, 1f);
     }
 }
