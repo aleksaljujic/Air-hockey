@@ -20,7 +20,7 @@ public class PuckScript : MonoBehaviour
     {
         if (!goal) 
         {
-            if(collider.tag == "P2Goal")
+            if (collider.tag == "P2Goal")
             {
                 scs.IncrementScore(ScoreScript.Score.Player1);
                 goal = true;
@@ -35,9 +35,17 @@ public class PuckScript : MonoBehaviour
         }
     }
 
-    private IEnumerator ResetPuck()
+    public IEnumerator ResetPuck()
     {
         yield return new WaitForSecondsRealtime(1);
+        goal = false;
+        rb.velocity = rb.position = new Vector2(0, 0);
+        Player1.position = new Vector2(-0.007f, -1f);
+        Player2.position = new Vector2(-0.007f, 1f);
+    }
+
+    public void ResetPuckInGame()
+    {
         goal = false;
         rb.velocity = rb.position = new Vector2(0, 0);
         Player1.position = new Vector2(-0.007f, -1f);
