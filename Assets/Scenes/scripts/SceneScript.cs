@@ -2,7 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
+//za client dodato
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Text;
 public class SceneScript : MonoBehaviour
 {
     public GameObject Canvas;
@@ -25,12 +29,108 @@ public class SceneScript : MonoBehaviour
     {
         get { return p1Wins; }
         set { p1Wins = value; }
+
     }
+    // -----UDP klient stvari-------------------------------------------------------
+    private UdpClient udpClient;//za slanje stvari
+    private IPEndPoint serverEndPoint;//ip+port kasnije
+    private Thread receivedThread;// da bi stalno slusali bez ometanja main threada
+    //------------------------------------------------------------------------------
 
     void Start()
     {
         inputFieldPassword.contentType = TMP_InputField.ContentType.Password;
+        //-----client initialization----
+        InitializeUdpClient();
     }
+    //metoda za inicijalizaciju--------------------------
+    private void InitializeUdpClient() {
+        udpClient = new UdpClient();
+        serverEndPoint = new IPEndPoint(IPAddress.Parse("ovde ubaci ip adresu servera"), 12345);
+        // thrad za slusanje
+        receivedThread = new Thread(ReceiveData);
+        receivedThread.Start();
+        // da znamo ko se povezao na servreru
+        SendMessage("connect:" + inputFieldUsername.text);
+    }
+    //---------------------------------------------------
+
+    //metoda a slanje---------
+    private void SendMessage(string message)
+    {
+        byte[] data = Encoding.ASCII.GetBytes(message);
+        udpClient.Send(data, data.Length, serverEndPoint);
+    }
+    //-----------------------
+
+    //metoda za prijem----------------------------
+    private void ReceiveData()
+    {
+        while (true)
+        {
+            IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 12345);
+            byte[] data = udpClient.Receive(ref remoteEP);
+
+            
+            string receivedMessage = Encoding.UTF8.GetString(data);
+            Debug.Log("Received from server: " + receivedMessage);
+
+            ProcessReceivedData(receivedMessage);
+        }
+    }
+    // -------------------------------------------
+    //metoda za obradjvanje poataka format type ,data
+    private void ProcessReceivedData(string data) {
+        string[] parts = data.Split(':');
+        string messagetype=parts[0];
+        string messagedata= parts.Length > 1 ? parts[1] : null;
+        switch (messagedata)
+        {
+            case "player2_position":
+                string[] player2PositionData = messagedata.Split(',');
+                float player2PosX = float.Parse(player2PositionData[0]);
+                float player2PosY = float.Parse(player2PositionData[1]);
+                puckScript.UpdatePlayer2Position(new Vector2(player2PosX, player2PosY));
+                break;
+
+
+            case "puck":
+                // Example: "puck:x,y" - Update puck position
+                string[] positionData = messagedata.Split(',');
+                float posX = float.Parse(positionData[0]);
+                float posY = float.Parse(positionData[1]);
+                puckScript.UpdatePuckPosition(new Vector2(posX, posY));
+                break;
+
+            case "goal":
+                // Example: "goal:P1" or "goal:P2" - Update the score
+                puckScript.HandleGoal(messagedata);
+                break;
+
+            case "reset":
+                // Example: "reset" - Reset the game state
+                puckScript.ResetPuckInGame();
+                scoreScript.ResetScores();
+                break;
+
+                // Add more cases as needed for other types of messages
+        }
+    
+
+
+
+
+
+
+    }
+    void OnApplicationQuit()
+    {
+       
+        receivedThread?.Abort();
+        udpClient?.Close();
+    }
+
+
 
     public void ShowRestartCanvas(bool p1Won)
     {
@@ -56,7 +156,7 @@ public class SceneScript : MonoBehaviour
         Canvas.SetActive(true);
         CanvasRestart.SetActive(false);
         scoreScript.ResetScores();
-        puckScript.ResetPuck();
+        puckScript.ResetPuckInGame();
     }
 
     public void StartGame()
@@ -69,6 +169,8 @@ public class SceneScript : MonoBehaviour
             Canvas.SetActive(true);
             CanvasRestart.SetActive(false);
             CanvasStart.SetActive(false);
+
+            SendMessage("start_game:" + inputFieldUsername.text);
         }
         else
         {
@@ -109,5 +211,42 @@ public class SceneScript : MonoBehaviour
         inputFieldUsername.text = "";
         inputFieldPassword.text = "";
         WinsText.text = "0";
+
+
+        SendMessage("logout:" + userText.text);
     }
+    public void SendPlayerInput(Vector2 input)
+    {
+        string message = "move:" + input.x + "," + input.y;
+        SendMessage(message);
+    }
+
+    public void SendGoalUpdate(string scoringPlayer)
+    {
+        string message = "goal:" + scoringPlayer;
+        SendMessage(message);
+    }
+
+    public void SendPuckReset()
+    {
+        string message = "puck_reset";
+        SendMessage(message);
+    }
+
+    public void SendScoreUpdate(string player, int score)
+    {
+        string message = "score_update:" + player + ":" + score;
+        SendMessage(message);
+    }
+
+    public void SendScoreReset()
+    {
+        string message = "score_reset";
+        SendMessage(message);
+    }
+
+
+
+
+
 }

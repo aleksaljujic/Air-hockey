@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class ScoreScript : MonoBehaviour
@@ -21,8 +20,12 @@ public class ScoreScript : MonoBehaviour
         set
         {
             p1score = value;
-            if (value == MaxScore)
+            P1ScoreText.text = p1score.ToString();
+            if (p1score >= MaxScore)
+            {
+                sceneScript.SendGoalUpdate("P1");
                 sceneScript.ShowRestartCanvas(true);
+            }
         }
     }
 
@@ -32,8 +35,12 @@ public class ScoreScript : MonoBehaviour
         set
         {
             p2score = value;
-            if (value == MaxScore)
+            P2ScoreText.text = p2score.ToString();
+            if (p2score >= MaxScore) {
+                sceneScript.SendGoalUpdate("P2");
                 sceneScript.ShowRestartCanvas(false);
+            }
+                
         }
     }
 
@@ -41,20 +48,34 @@ public class ScoreScript : MonoBehaviour
     {
         if (score == Score.Player1)
         {
-            P1ScoreText.text = (++P1Score).ToString();
+            P1Score++;
         }
         else
         {
-            P2ScoreText.text = (++P2Score).ToString();
+            P2Score++;
         }
     }
+    public void UpdateScoreFromServer(string player, int newScore)
+    {
+        if (player == "P1")
+        {
+            P1Score = newScore;
+        }
+        else if (player == "P2")
+        {
+            P2Score = newScore;
+        }
+    }
+
 
     public void ResetScores()
     {
         P1Score = 0;
         P2Score = 0;
         P1ScoreText.text = "0";
-        P2ScoreText.text = "0"; 
+        P2ScoreText.text = "0";
+
+        sceneScript.SendScoreReset(); 
     }
     
 }

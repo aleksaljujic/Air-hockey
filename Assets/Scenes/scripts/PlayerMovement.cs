@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody2D rb;
 
     public Transform BoundaryHolders;
+    public SceneScript sceneScript;
 
     Boundary playerBoundary;
 
@@ -67,6 +68,9 @@ public class PlayerMovement : MonoBehaviour
                                                       Mathf.Clamp(mousePosition.y, playerBoundary.Down,
                                                                   playerBoundary.Up));
                 rb.MovePosition(clampedMousePos);
+
+                //client deo-------------------------
+                sceneScript.SendPlayerInput(clampedMousePos);
             }
         }
         else
