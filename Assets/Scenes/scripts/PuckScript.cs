@@ -41,7 +41,7 @@ public class PuckScript : MonoBehaviour
         goal = false;
         rb.velocity = rb.position = new Vector2(0, 0);
         Player1.position = new Vector2(-0.007f, -1f);
-        Player2.position = new Vector2(-0.007f, 1f);
+        Player2.position = new Vector2(-0.007f, 1f); 
     }
 
     public void ResetPuckInGame()
