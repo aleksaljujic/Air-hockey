@@ -2,45 +2,53 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PuckScript : MonoBehaviour
-{
+public class PuckScript : MonoBehaviour   
+    {
     public ScoreScript scs;
+    public static bool goal{ get; private set; }
     private Rigidbody2D rb;
-    public Transform Player1, Player2;
+    public Transform Player1,Player2;
 
+    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        goal = false;
     }
 
-    public void UpdatePuckPosition(Vector2 newPosition)
+    private void OnTriggerEnter2D(Collider2D collider)
     {
-        rb.MovePosition(newPosition);
+        if (!goal) 
+        {
+            if (collider.tag == "P2Goal")
+            {
+                scs.IncrementScore(ScoreScript.Score.Player1);
+                goal = true;
+                StartCoroutine(ResetPuck());
+            }
+            else if(collider.tag == "P1Goal")
+            {
+                scs.IncrementScore(ScoreScript.Score.Player2);
+                goal = true;
+                StartCoroutine(ResetPuck());
+            }
+        }
     }
 
-    public void UpdatePlayer2Position(Vector2 newPosition)
+    public IEnumerator ResetPuck()
     {
-        Player2.position = new Vector3(newPosition.x, newPosition.y, Player2.position.z);
+        yield return new WaitForSecondsRealtime(1);
+        goal = false;
+        rb.velocity = rb.position = new Vector2(0, 0);
+        Player1.position = new Vector2(-0.007f, -1f);
+        Player2.position = new Vector2(-0.007f, 1f); 
     }
 
     public void ResetPuckInGame()
     {
-        rb.velocity = Vector2.zero;
-        rb.position = Vector2.zero;
+        goal = false;
+        rb.velocity = rb.position = new Vector2(0, 0);
         Player1.position = new Vector2(-0.007f, -1f);
-        Player2.position = new Vector2(-0.007f, -1f);
-    }
-
-    public void HandleGoal(string scoringPlayer)
-    {
-        if (scoringPlayer == "P1")
-        {
-            scs.IncrementScore(ScoreScript.Score.Player1);
-        }
-        else if (scoringPlayer == "P2")
-        {
-            scs.IncrementScore(ScoreScript.Score.Player2);
-        }
+        Player2.position = new Vector2(-0.007f, 1f);
     }
 }
-

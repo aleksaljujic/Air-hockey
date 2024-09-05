@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+
     bool clicked = true;
     bool canMove;
     Collider2D playerCollider;
+
     Rigidbody2D rb;
 
     public Transform BoundaryHolders;
-    public SceneScript sceneScript;
 
     Boundary playerBoundary;
 
@@ -20,13 +21,14 @@ public class PlayerMovement : MonoBehaviour
 
         public Boundary(float up, float down, float left, float right)
         {
-            Up = up;
-            Down = down;
-            Left = left;
-            Right = right;
+            this.Up = up;
+            this.Down = down;      
+            this.Left = left;
+            this.Right = right;
         }
     }
 
+    // Use this for initialization
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -35,17 +37,9 @@ public class PlayerMovement : MonoBehaviour
                                       BoundaryHolders.GetChild(1).position.y,
                                       BoundaryHolders.GetChild(2).position.x,
                                       BoundaryHolders.GetChild(3).position.x);
-        // Find SceneScript if it hasn't been assigned
-    if (sceneScript == null)
-        {
-            sceneScript = FindObjectOfType<SceneScript>();
-            if (sceneScript == null)
-            {
-                Debug.LogError("SceneScript not found!");
-            }
-        }
     }
 
+    // Update is called once per frame
     void Update()
     {
         if (Input.GetMouseButton(0))
@@ -56,7 +50,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 clicked = false;
 
-                if (playerCollider.OverlapPoint(mousePosition))
+                if(playerCollider.OverlapPoint(mousePosition))
                 {
                     canMove = true;
                 }
@@ -73,9 +67,6 @@ public class PlayerMovement : MonoBehaviour
                                                       Mathf.Clamp(mousePosition.y, playerBoundary.Down,
                                                                   playerBoundary.Up));
                 rb.MovePosition(clampedMousePos);
-
-                // Send player input to server
-                sceneScript.SendPlayerInput(clampedMousePos);
             }
         }
         else
